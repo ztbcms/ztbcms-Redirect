@@ -30,7 +30,7 @@ class RedirectService extends BaseService
     /**
      *
      */
-    public function link($url='',$param=''){
+    public function link($url='',$param){
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, 'mypost=' . $param);
