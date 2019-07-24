@@ -6,7 +6,7 @@
 
 return array(
 	//模块名称
-	'modulename' => '地址转换',
+	'modulename' => '外部链接转换',
 	//图标
 	'icon' => 'https://dn-coding-net-production-pp.qbox.me/e57af720-f26c-4f3b-90b9-88241b680b7b.png',
 	//模块简介
@@ -24,7 +24,7 @@ return array(
 	//适配最低CMS版本，
 	'adaptation' => '3.0.0.0',
 	//签名
-	'sign' => 'df974e2fe6b13c51ea8e94ceb58d03d2',
+	'sign' => '090d9785aaaae185c7a7574fc46ff708',
 	//依赖模块
 	'depend' => array(),
 	//行为注册

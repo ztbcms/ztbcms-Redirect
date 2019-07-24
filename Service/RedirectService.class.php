@@ -17,20 +17,36 @@ class RedirectService extends BaseService
      * @param string $url 指定短链接
      * @return mixed|void
      */
-    public function url($redirect=''){
-        if(empty($redirect)){
-            return ;
+    public function url($redirect = '')
+    {
+        if (empty($redirect)) {
+            return;
         }
-        $db=D('Redirect/Redirect');
-        $where=array();
-        $where['short_id']=$redirect;
-        $data=$db->where($where)->select();
+        $db = D('redirect_redirect');
+        $where = array();
+        $where['short_id'] = $redirect;
+        $data = $db->where($where)->select();
+        $db->where(['url'=>$data[0]['url']])->setInc('frequency');
         return $data[0]['url'];
     }
+
+    public function urlFromId($id = '')
+    {
+        if (empty($id)) {
+            return;
+        }
+        $db = D('Redirect/Redirect');
+        $where = array();
+        $where['id'] = $id;
+        $data = $db->where($where)->select();
+        return $data[0]['url'];
+    }
+
     /**
      *
      */
-    public function link($url='',$param){
+    public function link($url = '', $param = '')
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, 'mypost=' . $param);
@@ -39,13 +55,14 @@ class RedirectService extends BaseService
         curl_close($ch);
         return $data;
     }
+
     /**
      * 根据传入的：类别关键字，起始日期，结束日期，指定页码，指定记录数获取数据
-     * @param string $start_date    起始日期 ，格式：2018-01-01
-     * @param string $end_date      结束日期 ，格式：2018-01-01
-     * @param int    $page          指定的分页页码
-     * @param int    $limit         指定显示的记录条数
-     * @param string $actualurl       指定实际地址匹配
+     * @param string $start_date 起始日期 ，格式：2018-01-01
+     * @param string $end_date 结束日期 ，格式：2018-01-01
+     * @param int $page 指定的分页页码
+     * @param int $limit 指定显示的记录条数
+     * @param string $actualurl 指定实际地址匹配
      * @return array
      */
     public function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actualurl = '')
@@ -81,8 +98,8 @@ class RedirectService extends BaseService
         $total_page = ceil($count / $limit);
         //获取到的分页数据
         $Urls = $db->where($where)->page($page)->limit($limit)->order(array("id" => "desc"))->select();
-        for($i=0;$i<count($Urls);$i++){
-            $Urls[$i]['short_id']="http://ztbcms.biz/index.php/Redirect/Index/link/".$Urls[$i]['short_id'];
+        for ($i = 0; $i < count($Urls); $i++) {
+            $Urls[$i]['short_id'] = "http://ztbcms.biz/index.php/Redirect/Index/link/" . $Urls[$i]['short_id'];
         }
         $data = [
             'items' => $Urls,
@@ -93,14 +110,62 @@ class RedirectService extends BaseService
 
         return $data;
     }
-    public function addUrl($url=''){
-        if(empty($url))
-            return ;
+
+    /**
+     * @param string $url 指定新增地址
+     * @return bool|void  返回增加结果
+     */
+    public function addUrl($url = '')
+    {
+        $data=['status'=>true,'info'=>''];
+//        if (empty($url))
+//            return;
         $db = D('Redirect/Redirect');
-        $short_id=md5($url);
-        $time=time();
-        $num=$db->insert(['url'=>$url,'short_id'=>$short_id,'input_time'=>$time]);
-        if($num)
+        $result=$db->where('url="'.$url.'"')->count();
+        if($result>0){
+            $data['status']=false;
+            $data['info']="链接已存在";
+            return $data;
+        }
+        $short_id = md5($url);
+        $time = time();
+        $num = $db->add(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
+        if(!$num){
+            $data['status']=false;
+            $data['info']="添加失败";
+        }
+        return $data;
+    }
+
+    /**
+     * @param string $url 更新地址
+     * @param string $id 更新id
+     * @return bool|void  更新结果
+     */
+    public function updateUrl($url = '', $id = '')
+    {
+        if (empty($url) || empty($id))
+            return;
+        $db = D('Redirect/Redirect');
+        $short_id = md5($url);
+        $time = time();
+        $num = $db->where('id=' . $id)->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
+        if ($num)
+            return true;
+        return false;
+    }
+
+    /**
+     * @param string $id 删除数据的id
+     * @return bool|void  返回删除结果
+     */
+    public function deleteUrl($id = '')
+    {
+        if (empty($id))
+            return false;
+        $db = D('Redirect/Redirect');
+        $num = $db->where('id=' . $id)->delete();
+        if ($num)
             return true;
         return false;
     }
