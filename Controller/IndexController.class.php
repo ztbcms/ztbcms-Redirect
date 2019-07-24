@@ -3,7 +3,6 @@
 namespace Redirect\Controller;
 
 use Common\Controller\AdminBase;
-use phpDocumentor\Reflection\DocBlock\Tags\Reference\Url;
 use Redirect\Service\RedirectService;
 
 class IndexController extends AdminBase
@@ -31,23 +30,60 @@ class IndexController extends AdminBase
     public function link($redirect = '')
     {
         $data = RedirectService::url($redirect);
-//        //print_r($data);
-//        //echo $data[0]['actualurl'];
-        if(empty($data))
-            return ;
+        if (empty($data))
+            return;
         redirect($data);
-        $tmp=substr($data[0]['actualurl'],0,strrpos($data[0]['actualurl'],'?'));
-        $str=substr($data[0]['actualurl'],strripos($data[0]['actualurl'],'?')+1);
-        $html=RedirectService::link($tmp,$str);
-        echo $html;
     }
-    public function add(){
+
+    public function add()
+    {
         $this->display('add');
     }
-    public function addUrl(){
-        if(IS_POST){
 
+    public function addUrl()
+    {
+        if (IS_POST) {
+            $data = RedirectService::addUrl($_POST['url']);
+            if ($data['status']) {
+                $tmp = self::createReturn($data['status'], '', '', '200', U('Index/index'));
+                $tmp['info'] = $data['info'];
+                $this->ajaxReturn($tmp);
+            }
+            $tmp = self::createReturn(false, '', '', '400', '');
+            $tmp['info'] = $data['info'];
+            $this->ajaxReturn($tmp);
         }
-        $status=RedirectService::addUrl();
+    }
+
+    public function update()
+    {
+        $data = RedirectService::urlFromId($_GET['id']);
+        if (empty($data)) {
+            $this->error("该地址已被删除！", U('Index/index'));
+        }
+        $this->assign(["id" => $_GET['id'], "url" => $data]);
+        $this->display("update");
+    }
+
+    public function updateUrl()
+    {
+        if (IS_POST) {
+            $status = RedirectService::updateUrl($_POST['url'], $_POST['id']);
+            if ($status) {
+                $tmp = self::createReturn(true, '', '', '200', U('Index/index'));
+                $tmp['info'] = "修改成功";
+                $this->ajaxReturn($tmp);
+            }
+        }
+        $tmp = self::createReturn(false, '', '', '400', '');
+        $tmp['info'] = "修改失败";
+        $this->ajaxReturn($tmp);
+    }
+
+    public function deleteUrl()
+    {
+        $data = RedirectService::deleteUrl($_GET['id']);
+        $result = array('delete' => $data);
+        $this->ajaxReturn(self::createReturn(true, $result));
     }
 }
