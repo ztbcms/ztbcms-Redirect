@@ -14,8 +14,8 @@ use System\Service\BaseService;
 class RedirectService extends BaseService
 {
     /**
-     * @param string $url 指定短链接
-     * @return mixed|void
+     * @param string $redirect 指定访问的短链接
+     * @return string
      */
     public function url($redirect = '')
     {
@@ -26,10 +26,14 @@ class RedirectService extends BaseService
         $where = array();
         $where['short_id'] = $redirect;
         $data = $db->where($where)->select();
-        $db->where(['url'=>$data[0]['url']])->setInc('frequency');
+        $db->where(['url'=>$data[0]['url']])->setInc('frequency',1,0);
         return $data[0]['url'];
     }
 
+    /**
+     * @param string $id 指定id
+     * @return string
+     */
     public function urlFromId($id = '')
     {
         if (empty($id)) {
@@ -41,21 +45,6 @@ class RedirectService extends BaseService
         $data = $db->where($where)->select();
         return $data[0]['url'];
     }
-
-    /**
-     *
-     */
-    public function link($url = '', $param = '')
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'mypost=' . $param);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $data = curl_exec($ch);
-        curl_close($ch);
-        return $data;
-    }
-
     /**
      * 根据传入的：类别关键字，起始日期，结束日期，指定页码，指定记录数获取数据
      * @param string $start_date 起始日期 ，格式：2018-01-01
@@ -113,7 +102,7 @@ class RedirectService extends BaseService
 
     /**
      * @param string $url 指定新增地址
-     * @return bool|void  返回增加结果
+     * @return array
      */
     public function addUrl($url = '')
     {
@@ -140,19 +129,28 @@ class RedirectService extends BaseService
     /**
      * @param string $url 更新地址
      * @param string $id 更新id
-     * @return bool|void  更新结果
+     * @return array
      */
     public function updateUrl($url = '', $id = '')
     {
+        $data=['status'=>false,'info'=>'修改失败'];
         if (empty($url) || empty($id))
-            return;
+            return $data;
         $db = D('Redirect/Redirect');
+        $result=$db->where('url="'.$url.'"')->count();
+        if($result>0){
+            $data['status']=false;
+            $data['info']="链接已存在";
+            return $data;
+        }
         $short_id = md5($url);
         $time = time();
-        $num = $db->where('id=' . $id)->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
-        if ($num)
-            return true;
-        return false;
+        $num = $db->where('id=' . $id)->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time,'frequency'=>0]);
+        if ($num){
+            $data['status']=true;
+            $data['info']="修改成功";
+        }
+        return $data;
     }
 
     /**

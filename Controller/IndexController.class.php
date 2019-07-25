@@ -44,14 +44,7 @@ class IndexController extends AdminBase
     {
         if (IS_POST) {
             $data = RedirectService::addUrl($_POST['url']);
-            if ($data['status']) {
-                $tmp = self::createReturn($data['status'], '', '', '200', U('Index/index'));
-                $tmp['info'] = $data['info'];
-                $this->ajaxReturn($tmp);
-            }
-            $tmp = self::createReturn(false, '', '', '400', '');
-            $tmp['info'] = $data['info'];
-            $this->ajaxReturn($tmp);
+            $this->ajaxReturn(self::createReturn($data['status'], '', $data['info'], '200', U('Index/index')));
         }
     }
 
@@ -68,16 +61,9 @@ class IndexController extends AdminBase
     public function updateUrl()
     {
         if (IS_POST) {
-            $status = RedirectService::updateUrl($_POST['url'], $_POST['id']);
-            if ($status) {
-                $tmp = self::createReturn(true, '', '', '200', U('Index/index'));
-                $tmp['info'] = "修改成功";
-                $this->ajaxReturn($tmp);
-            }
+            $data = RedirectService::updateUrl($_POST['url'], $_POST['id']);
+            $this->ajaxReturn( self::createReturn($data['status'], '',$data['info'] , 200, U('Index/index')));
         }
-        $tmp = self::createReturn(false, '', '', '400', '');
-        $tmp['info'] = "修改失败";
-        $this->ajaxReturn($tmp);
     }
 
     public function deleteUrl()

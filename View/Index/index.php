@@ -116,9 +116,6 @@
                                     that.temp_page = res.data.page;
                                     that.total_page = res.data.total_page;
                                 }
-                            },
-                            fail: function (fail) {
-                                layer.msg("加载失败", {'time': 1500});
                             }
                         });
                     },
