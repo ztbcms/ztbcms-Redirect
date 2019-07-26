@@ -22,7 +22,8 @@ class IndexController extends AdminBase
         $limit = I('limit', 20);
         //按内容搜索时的日志内容关键字
         $actualurl = I('url');
-        $data = RedirectService::getUrls($start_date, $end_date, $page, $limit, $actualurl);
+        $sort=I('sort');
+        $data = RedirectService::getUrls($start_date, $end_date, $page, $limit, $actualurl,$sort);
         $this->ajaxReturn(self::createReturn(true, $data));
 
     }
@@ -44,17 +45,18 @@ class IndexController extends AdminBase
     {
         if (IS_POST) {
             $data = RedirectService::addUrl($_POST['url']);
-            $this->ajaxReturn(self::createReturn($data['status'], '', $data['info'], '200', U('Index/index')));
+            $this->ajaxReturn($data);
         }
     }
 
     public function update()
     {
+        $msg='';
         $data = RedirectService::urlFromId($_GET['id']);
         if (empty($data)) {
-            $this->error("该地址已被删除！", U('Index/index'));
+            $msg="原链接已不存在";
         }
-        $this->assign(["id" => $_GET['id'], "url" => $data]);
+        $this->assign(["id" => $_GET['id'], "url" => $data,'msg'=>$msg]);
         $this->display("update");
     }
 
@@ -62,14 +64,13 @@ class IndexController extends AdminBase
     {
         if (IS_POST) {
             $data = RedirectService::updateUrl($_POST['url'], $_POST['id']);
-            $this->ajaxReturn( self::createReturn($data['status'], '',$data['info'] , 200, U('Index/index')));
+            $this->ajaxReturn($data);
         }
     }
 
     public function deleteUrl()
     {
-        $data = RedirectService::deleteUrl($_GET['id']);
-        $result = array('delete' => $data);
-        $this->ajaxReturn(self::createReturn(true, $result));
+        $data = RedirectService::deleteUrl($_POST['id']);
+        $this->ajaxReturn($data);
     }
 }

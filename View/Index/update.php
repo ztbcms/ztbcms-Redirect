@@ -1,86 +1,81 @@
-<Admintemplate file="Common/Head" />
+<extend name="../../Admin/View/Common/element_layout"/>
 
-<body class="J_scroll_fixed">
-    <div class="wrap jj" id="app">
-        <div class="nav">
-            <ul class="cc">
-                <li class="current">修改地址</li>
-            </ul>
-        </div>
+<block name="content">
+    <div id="app" style="padding: 8px;" v-cloak>
+        <el-card>
+            <h3>修改链接</h3>
+            <el-row>
+                <el-col :span="8">
+                    <div class="grid-content ">
+                        <el-form ref="form" :model="form" label-width="80px">
+                            <el-form-item label="外部链接">
+                                <el-input v-model="form.url"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="onSubmit">修改</el-button>
+                                <el-button @click="onCancel">取消</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </el-col>
+                <el-col :span="16"><div class="grid-content "></div></el-col>
+            </el-row>
 
-        <div class="h_a">地址信息</div>
-        <div class="table_full">
-            <table width="100%">
-                <col class="th" />
-                <col />
-                <tr>
-                    <th>实际地址</th>
-                    <td>
-                        <input name="id" type="hidden" v-model="id" />
-                        <input name="url" type="text" class="input" v-model="url">
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="">
-            <div class="btn_wrap_pd">
-                <button class="btn btn_submit" @click="updateItem">修改</button>
-                <span class="error_msg" role="tooltip">{{msg}}</span>
-            </div>
-        </div>
+
+        </el-card>
     </div>
 
     <style>
-        .error_msg{
-            color:red;
-            font-size: 1.5rem;
-            font-weight: bolder;
-        }
+
     </style>
 
-    <script type="text/javascript">
-        var vm = new Vue({
-            el: "#app",
-            data: {
-                id: '{$id}',
-                msg: "",
-                url: "{$url}",
-            },
-            methods: {
-                updateItem: function() {
-                    this.msg = ''
-                  
-                    if (this.url.trim() == '') {
-                        this.msg = "地址不能为空！"
-                        return;
+    <script>
+        $(document).ready(function () {
+            new Vue({
+                el: '#app',
+                data: {
+                    form: {
+                        url: '{$url}',
+                        id:'{$id}'
                     }
-
-                    var that = this;
-                    $.ajax({
-                        url: '{:U("Redirect/Index/updateUrl")}',
-                        data: {
-                            url: that.url,
-                            id: that.id
-                        },
-                        type: 'post',
-                        dataType: 'json',
-                        success(res) {
-                            if (!res.status) {
-                                layer.msg(res.msg)
-                            } else {
-                                layer.msg('操作成功')
-                            }
+                },
+                watch: {},
+                filters: {},
+                methods: {
+                    onSubmit: function(){
+                        console.log(this.form.id);
+                        if (this.form.url.trim() == '') {
+                            this.msg = "地址不能为空！"
+                            return;
                         }
-                    })
+                        var that = this;
+                        $.ajax({
+                            url: '{:U("Redirect/Index/updateUrl")}',
+                            data: {
+                                url: that.form.url,
+                                id: that.form.id
+                            },
+                            type: 'post',
+                            dataType: 'json',
+                            success(res) {
+                                if (!res.status) {
+                                    that.$message.error(res.msg);
+                                }
+                                else {
+                                    that.$message.success('修改成功');
+                                }
+                            }
+                        })
+                    },
+                    onCancel: function(){
+                        this.$message.error('已取消');
+                    },
+                },
+                mounted: function () {
 
-                }
-            },
+                },
+
+            })
         })
     </script>
-
-</body>
-
-
-
-
-</html>
+</block>

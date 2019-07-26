@@ -51,10 +51,11 @@ class RedirectService extends BaseService
      * @param string $end_date 结束日期 ，格式：2018-01-01
      * @param int $page 指定的分页页码
      * @param int $limit 指定显示的记录条数
-     * @param string $actualurl 指定实际地址匹配
+     * @param string $actualurl
+     * @param string $sort 排序方式
      * @return array
      */
-    public function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actualurl = '')
+    public function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actualurl = '',$sort='+id')
     {
         $db = D('Redirect/Redirect');
         //初始化条件数组
@@ -86,7 +87,11 @@ class RedirectService extends BaseService
         //总页数
         $total_page = ceil($count / $limit);
         //获取到的分页数据
-        $Urls = $db->where($where)->page($page)->limit($limit)->order(array("id" => "desc"))->select();
+        $tmp = $db->where($where)->page($page)->limit($limit);
+        if($sort=="-id"){
+            $tmp->order(['id'=>'DESC']);
+        }
+        $Urls=$tmp->select();
         for ($i = 0; $i < count($Urls); $i++) {
             $Urls[$i]['short_id'] = "http://ztbcms.biz/index.php/Redirect/Index/link/" . $Urls[$i]['short_id'];
         }
@@ -106,24 +111,18 @@ class RedirectService extends BaseService
      */
     public function addUrl($url = '')
     {
-        $data=['status'=>true,'info'=>''];
-//        if (empty($url))
-//            return;
         $db = D('Redirect/Redirect');
         $result=$db->where('url="'.$url.'"')->count();
         if($result>0){
-            $data['status']=false;
-            $data['info']="链接已存在";
-            return $data;
+            return self::createReturn(false,'','链接已存在');
         }
         $short_id = md5($url);
         $time = time();
         $num = $db->add(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
         if(!$num){
-            $data['status']=false;
-            $data['info']="添加失败";
+            return self::createReturn(false,'','操作失败');
         }
-        return $data;
+        return self::createReturn(true,'','操作成功');
     }
 
     /**
@@ -139,18 +138,15 @@ class RedirectService extends BaseService
         $db = D('Redirect/Redirect');
         $result=$db->where('url="'.$url.'"')->count();
         if($result>0){
-            $data['status']=false;
-            $data['info']="链接已存在";
-            return $data;
+            return self::createReturn(false,'','链接已存在');
         }
         $short_id = md5($url);
         $time = time();
         $num = $db->where('id=' . $id)->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time,'frequency'=>0]);
         if ($num){
-            $data['status']=true;
-            $data['info']="修改成功";
+            return self::createReturn($num,'','操作成功');
         }
-        return $data;
+        return self::createReturn(false,'','操作失败');
     }
 
     /**
@@ -164,7 +160,7 @@ class RedirectService extends BaseService
         $db = D('Redirect/Redirect');
         $num = $db->where('id=' . $id)->delete();
         if ($num)
-            return true;
-        return false;
+            return self::createReturn(true,'','操作成功');
+        return self::createReturn(true,'','操作失败');
     }
 }
