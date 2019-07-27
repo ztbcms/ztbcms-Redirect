@@ -38,7 +38,7 @@
                     @sort-change="sortChange"
             >
                 <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80"
-                                 :class-name="getSortClass('id')">
+                                 :class-name="getSortClass()">
                     <template slot-scope="scope">
                         <span>{{ scope.row.id }}</span>
                     </template>
@@ -120,7 +120,7 @@
                         end_date: '',
                         page: 1,
                         limit: 20,
-                        sort: '+id'
+                        sort: 1
                     },
                     s_e_date: [],
                     calendarTypeOptions: [
@@ -157,7 +157,8 @@
                             success: function (res) {
                                 if (res.status) {
                                     that.urls = res.data.items;
-                                    that.total = res.data.total_page;
+                                    that.total = res.data.total - 1 + 1;
+                                    that.listQuery.page = res.data.page - 1 + 1;
                                 }
                                 that.listLoading = false
                             }
@@ -174,14 +175,14 @@
                         this.listQuery.page = 1;
                         this.getList();
                     },
-                    addItem:function(){
+                    addItem: function () {
                         window.openNewIframe('添加外部链接', '{:U("Redirect/Index/add")}')
                     },
                     updateItem: function (id) {
                         window.openNewIframe('添加外部链接', '{:U("Redirect/Index/update")}' + "&id=" + id)
                     },
                     deleteItem: function (id) {
-                        var that=this;
+                        var that = this;
                         $.ajax({
                             url: '{:U("Redirect/Index/deleteUrl")}',
                             data: {
@@ -191,14 +192,12 @@
                             dataType: 'json',
                             success: function (res) {
                                 if (res.status) {
-                                    if (res.data.delete) {
-                                        that.getList()
-                                        that.$message.success('删除成功');
-                                    } else {
-                                        that.$message.error('删除失败');
-                                    }
+                                    that.getList()
+                                    that.$message.success('删除成功');
+                                } else {
+                                    that.$message.error('删除失败');
                                 }
-                                this.status=false;
+                                this.status = false;
                             }
                         });
                     },
@@ -208,9 +207,9 @@
                     },
                     sortByID: function (order) {
                         if (order === 'ascending') {
-                            this.listQuery.sort = '+id'
+                            this.listQuery.sort = 1
                         } else {
-                            this.listQuery.sort = '-id'
+                            this.listQuery.sort = -1
                         }
                         this.handleFilter()
                     },
@@ -221,13 +220,13 @@
                             this.sortByID(order)
                         }
                     },
-                    getSortClass: function (key) {
+                    getSortClass: function () {
                         const sort = this.listQuery.sort
-                        return sort === `+${key}`
-                            ? 'ascending'
-                            : sort === `-${key}`
-                                ? 'descending'
-                                : ''
+                        if (sort === 1) {
+                            return 'ascending';
+                        } else {
+                            return 'descending';
+                        }
                     },
                     //以窗口形式打开链接
                     openArticleLink: function (url) {

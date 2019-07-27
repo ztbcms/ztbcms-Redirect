@@ -54,10 +54,10 @@ class RedirectService extends BaseService
      * @param int $page 指定的分页页码
      * @param int $limit 指定显示的记录条数
      * @param string $actual_url
-     * @param string $sort 排序方式
+     * @param int $sort 排序方式
      * @return array
      */
-    public static function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actual_url = '', $sort = '+id')
+    public static function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actual_url = '', $sort = 1)
     {
         $db = D('Redirect/Redirect');
         //初始化条件数组
@@ -89,11 +89,11 @@ class RedirectService extends BaseService
         //总页数
         $total_page = ceil($count / $limit);
         //获取到的分页数据
-        $tmp = $db->where($where)->page($page)->limit($limit);
-        if ($sort == "-id") {
-            $tmp->order(['id' => 'DESC']);
+        $tmp = array();
+        if ($sort == -1) {
+            $tmp = ['id' => 'DESC'];
         }
-        $Urls = $tmp->select();
+        $Urls = $db->where($where)->page($page)->limit($limit)->order($tmp)->select();
         for ($i = 0; $i < count($Urls); $i++) {
             $Urls[$i]['short_id'] = urlDomain(get_url()) . "/Redirect/Redirect/link/redirect/" . $Urls[$i]['short_id'];
         }
@@ -102,6 +102,7 @@ class RedirectService extends BaseService
             'page' => $page,
             'limit' => $limit,
             'total_page' => $total_page,
+            'total' => $count
         ];
         return self::createReturn(true, $data);
     }

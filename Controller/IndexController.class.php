@@ -7,11 +7,17 @@ use Redirect\Service\RedirectService;
 
 class IndexController extends AdminBase
 {
+    /**
+     * 首页
+     */
     public function index()
     {
         $this->display();
     }
 
+    /**
+     * 获取外部链接Url列表
+     */
     public function getUrls()
     {
         //设置时间范围，从 $start_date 到 $end_date
@@ -28,12 +34,17 @@ class IndexController extends AdminBase
 
     }
 
-
+    /**
+     * 添加外部链接页面
+     */
     public function add()
     {
         $this->display('add');
     }
 
+    /**
+     * 添加外部链接url
+     */
     public function addUrl()
     {
         if (IS_POST) {
@@ -43,6 +54,9 @@ class IndexController extends AdminBase
         }
     }
 
+    /**
+     * 修改外部链接页面
+     */
     public function update()
     {
         $id = I('id');
@@ -53,6 +67,9 @@ class IndexController extends AdminBase
         }
     }
 
+    /**
+     * 更新外部链接url
+     */
     public function updateUrl()
     {
         if (IS_POST) {
@@ -63,6 +80,9 @@ class IndexController extends AdminBase
         }
     }
 
+    /**
+     * 删除一个外部链接
+     */
     public function deleteUrl()
     {
         $id = I('post.id');
