@@ -7,7 +7,7 @@
             <el-row>
                 <el-col :span="8">
                     <div class="grid-content ">
-                        <el-form ref="form" :model="form" label-width="80px">
+                        <el-form ref="form" label-width="80px">
                             <el-form-item label="外部链接">
                                 <el-input v-model="form.url"></el-input>
                             </el-form-item>
@@ -43,7 +43,6 @@
                 filters: {},
                 methods: {
                     onSubmit: function(){
-                        console.log(this.form.id);
                         if (this.form.url.trim() == '') {
                             this.msg = "地址不能为空！"
                             return;

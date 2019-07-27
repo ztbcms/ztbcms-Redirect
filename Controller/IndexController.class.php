@@ -21,20 +21,13 @@ class IndexController extends AdminBase
         $page = I('page', 1);
         $limit = I('limit', 20);
         //按内容搜索时的日志内容关键字
-        $actualurl = I('url');
-        $sort=I('sort');
-        $data = RedirectService::getUrls($start_date, $end_date, $page, $limit, $actualurl,$sort);
-        $this->ajaxReturn(self::createReturn(true, $data));
+        $actual_url = I('url');
+        $sort = I('sort');
+        $data = RedirectService::getUrls($start_date, $end_date, $page, $limit, $actual_url, $sort);
+        $this->ajaxReturn($data);
 
     }
 
-    public function link($redirect = '')
-    {
-        $data = RedirectService::url($redirect);
-        if (empty($data))
-            return;
-        redirect($data);
-    }
 
     public function add()
     {
@@ -44,33 +37,36 @@ class IndexController extends AdminBase
     public function addUrl()
     {
         if (IS_POST) {
-            $data = RedirectService::addUrl($_POST['url']);
+            $url = I('url');
+            $data = RedirectService::addUrl($url);
             $this->ajaxReturn($data);
         }
     }
 
     public function update()
     {
-        $msg='';
-        $data = RedirectService::urlFromId($_GET['id']);
-        if (empty($data)) {
-            $msg="原链接已不存在";
+        $id = I('id');
+        $data = RedirectService::getUrlById($id);
+        if ($data['status']) {
+            $this->assign(["id" => $id, "url" => $data['data'][0]['url']]);
+            $this->display("update");
         }
-        $this->assign(["id" => $_GET['id'], "url" => $data,'msg'=>$msg]);
-        $this->display("update");
     }
 
     public function updateUrl()
     {
         if (IS_POST) {
-            $data = RedirectService::updateUrl($_POST['url'], $_POST['id']);
+            $url = I('url');
+            $id = I('id');
+            $data = RedirectService::updateUrl($url, $id);
             $this->ajaxReturn($data);
         }
     }
 
     public function deleteUrl()
     {
-        $data = RedirectService::deleteUrl($_POST['id']);
+        $id = I('post.id');
+        $data = RedirectService::deleteUrl($id);
         $this->ajaxReturn($data);
     }
 }

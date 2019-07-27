@@ -15,47 +15,49 @@ class RedirectService extends BaseService
 {
     /**
      * @param string $redirect 指定访问的短链接
-     * @return string
+     * @return array
      */
-    public function url($redirect = '')
+    public static function getUrl($redirect)
     {
         if (empty($redirect)) {
-            return;
+            return self::createReturn(false);
         }
         $db = D('redirect_redirect');
         $where = array();
         $where['short_id'] = $redirect;
         $data = $db->where($where)->select();
-        $db->where(['url'=>$data[0]['url']])->setInc('frequency',1,0);
-        return $data[0]['url'];
+        $url = $data[0]['url'];
+        $db->where(['url' => $url])->setInc('frequency', 1, 0);
+        return self::createReturn(true, $url);
     }
 
     /**
      * @param string $id 指定id
-     * @return string
+     * @return array
      */
-    public function urlFromId($id = '')
+    public static function getUrlById($id)
     {
         if (empty($id)) {
-            return;
+            return self::createReturn(false);
         }
         $db = D('Redirect/Redirect');
         $where = array();
         $where['id'] = $id;
         $data = $db->where($where)->select();
-        return $data[0]['url'];
+        return self::createReturn(true, $data);
     }
+
     /**
      * 根据传入的：类别关键字，起始日期，结束日期，指定页码，指定记录数获取数据
      * @param string $start_date 起始日期 ，格式：2018-01-01
      * @param string $end_date 结束日期 ，格式：2018-01-01
      * @param int $page 指定的分页页码
      * @param int $limit 指定显示的记录条数
-     * @param string $actualurl
+     * @param string $actual_url
      * @param string $sort 排序方式
      * @return array
      */
-    public function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actualurl = '',$sort='+id')
+    public static function getUrls($start_date = '', $end_date = '', $page = 1, $limit = 20, $actual_url = '', $sort = '+id')
     {
         $db = D('Redirect/Redirect');
         //初始化条件数组
@@ -78,8 +80,8 @@ class RedirectService extends BaseService
 
         }
 
-        if (!empty($actualurl)) {
-            $where['url'] = array('LIKE', '%' . $actualurl . '%');
+        if (!empty($actual_url)) {
+            $where['url'] = array('LIKE', '%' . $actual_url . '%');
         }
 
         //获取总记录数
@@ -88,12 +90,12 @@ class RedirectService extends BaseService
         $total_page = ceil($count / $limit);
         //获取到的分页数据
         $tmp = $db->where($where)->page($page)->limit($limit);
-        if($sort=="-id"){
-            $tmp->order(['id'=>'DESC']);
+        if ($sort == "-id") {
+            $tmp->order(['id' => 'DESC']);
         }
-        $Urls=$tmp->select();
+        $Urls = $tmp->select();
         for ($i = 0; $i < count($Urls); $i++) {
-            $Urls[$i]['short_id'] = "http://ztbcms.biz/index.php/Redirect/Index/link/" . $Urls[$i]['short_id'];
+            $Urls[$i]['short_id'] = urlDomain(get_url()) . "/Redirect/Redirect/link/redirect/" . $Urls[$i]['short_id'];
         }
         $data = [
             'items' => $Urls,
@@ -101,28 +103,27 @@ class RedirectService extends BaseService
             'limit' => $limit,
             'total_page' => $total_page,
         ];
-
-        return $data;
+        return self::createReturn(true, $data);
     }
 
     /**
      * @param string $url 指定新增地址
      * @return array
      */
-    public function addUrl($url = '')
+    public static function addUrl($url)
     {
         $db = D('Redirect/Redirect');
-        $result=$db->where('url="'.$url.'"')->count();
-        if($result>0){
-            return self::createReturn(false,'','链接已存在');
+        $result = $db->where('url="' . $url . '"')->find();
+        if ($result > 0) {
+            return self::createReturn(false, '', '链接已存在');
         }
         $short_id = md5($url);
         $time = time();
         $num = $db->add(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
-        if(!$num){
-            return self::createReturn(false,'','操作失败');
+        if (!$num) {
+            return self::createReturn(false, '', '操作失败');
         }
-        return self::createReturn(true,'','操作成功');
+        return self::createReturn(true, '', '操作成功');
     }
 
     /**
@@ -130,37 +131,38 @@ class RedirectService extends BaseService
      * @param string $id 更新id
      * @return array
      */
-    public function updateUrl($url = '', $id = '')
+    public static function updateUrl($url, $id)
     {
-        $data=['status'=>false,'info'=>'修改失败'];
         if (empty($url) || empty($id))
-            return $data;
+            return self::createReturn('false', '', '不能为空');
         $db = D('Redirect/Redirect');
-        $result=$db->where('url="'.$url.'"')->count();
-        if($result>0){
-            return self::createReturn(false,'','链接已存在');
+        $result = $db->where(['url' => ['EQ', $url]])->find();
+        if ($result != NULL) {
+            return self::createReturn(false, $result, '链接已存在');
         }
         $short_id = md5($url);
         $time = time();
-        $num = $db->where('id=' . $id)->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time,'frequency'=>0]);
-        if ($num){
-            return self::createReturn($num,'','操作成功');
+        $num = $db->where(['id' => ['EQ', $id]])->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time, 'frequency' => 0]);
+        if ($num) {
+            return self::createReturn(true, '', '操作成功');
         }
-        return self::createReturn(false,'','操作失败');
+        return self::createReturn(false, '', '操作失败');
     }
 
     /**
      * @param string $id 删除数据的id
-     * @return bool|void  返回删除结果
+     * @return array
      */
-    public function deleteUrl($id = '')
+    public static function deleteUrl($id)
     {
-        if (empty($id))
-            return false;
+        if (empty($id)) {
+            return self::createReturn(false, '', '操作失败');
+        }
         $db = D('Redirect/Redirect');
-        $num = $db->where('id=' . $id)->delete();
-        if ($num)
-            return self::createReturn(true,'','操作成功');
-        return self::createReturn(true,'','操作失败');
+        $num = $db->where(['id' => ['EQ', $id]])->delete();
+        if ($num) {
+            return self::createReturn(true, '', '操作成功');
+        }
+        return self::createReturn(false, '', '操作失败');
     }
 }
