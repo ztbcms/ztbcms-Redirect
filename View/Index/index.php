@@ -176,10 +176,10 @@
                         this.getList();
                     },
                     addItem: function () {
-                        window.openNewIframe('添加外部链接', '{:U("Redirect/Index/add")}')
+                        window.Ztbcms.openNewIframeByUrl('添加外部链接', '{:U("Redirect/Index/add")}')
                     },
                     updateItem: function (id) {
-                        window.openNewIframe('添加外部链接', '{:U("Redirect/Index/update")}' + "&id=" + id)
+                        window.Ztbcms.openNewIframeByUrl('添加外部链接', '{:U("Redirect/Index/update")}' + "&id=" + id)
                     },
                     deleteItem: function (id) {
                         var that = this;
