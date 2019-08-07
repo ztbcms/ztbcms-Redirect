@@ -12,11 +12,11 @@ class RedirectController extends Controller
     public function link()
     {
         $redirect = I('redirect');
-        $data = RedirectService::getUrl($redirect);
-        if (!$data['status']) {
+        $result = RedirectService::getUrl($redirect);
+        if (!$result['status'] || empty($result['data'])) {
             echo '找不到链接';
             return;
         }
-        redirect($data['data']);
+        redirect($result['data']);
     }
 }

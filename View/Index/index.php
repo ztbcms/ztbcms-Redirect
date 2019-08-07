@@ -4,7 +4,12 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <el-card>
             <h3>外部链接列表</h3>
-            <div class="filter-container">
+            <el-alert
+                    title="使用短链接时需要配置路由，详情请看模块的readme.md"
+                    type="success">
+            </el-alert>
+            <div class="filter-container" style="margin-top: 10px;">
+
                 <el-input v-model="listQuery.url" placeholder="原链接" style="width: 200px;"
                           class="filter-item"></el-input>
                 <el-date-picker
@@ -18,10 +23,10 @@
                         end-placeholder="结束日期"
                         value-format="yyyy-MM-dd">
                 </el-date-picker>
-                <el-button class="filter-item" type="primary" icon="el-icon-search" @click="search">
+                <el-button class="filter-item" type="primary"  @click="search">
                     搜索
                 </el-button>
-                <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
+                <el-button class="filter-item" style="margin-left: 10px;" type="primary"
                            @click="addItem">
                     添加
                 </el-button>
@@ -29,7 +34,6 @@
             </div>
             <el-table
                     :key="tableKey"
-                    v-loading="listLoading"
                     :data="urls"
                     border
                     fit
@@ -55,7 +59,8 @@
                 </el-table-column>
                 <el-table-column label="短链接" align="center">
                     <template slot-scope="scope">
-                        <span><a :href="scope.row.short_id" target="_blank">{{ scope.row.short_id }}</a></span>
+                        <p>非短链接:<a :href="scope.row.short_url_v1" target="_blank">{{ scope.row.short_url_v1 }}</a></p>
+                        <p>短链接:<a :href="scope.row.short_url_v2" target="_blank">{{ scope.row.short_url_v2 }}</a></p>
                     </template>
                 </el-table-column>
                 <el-table-column label="访问量" align="center" width="95">
@@ -68,7 +73,7 @@
                         <el-button type="primary" size="mini" @click="updateItem(row.id)">
                             编辑
                         </el-button>
-                        <el-button v-if="row.status!='deleted'" size="mini" type="danger"
+                        <el-button size="mini" type="danger"
                                    @click="deleteItem(row.id)">
                             删除
                         </el-button>
@@ -113,7 +118,6 @@
                     list: [],
                     urls: [],
                     total: 0,
-                    listLoading: true,
                     listQuery: {
                         url: '',
                         start_date: '',
@@ -123,12 +127,6 @@
                         sort: 1
                     },
                     s_e_date: [],
-                    calendarTypeOptions: [
-                        {key: 'CN', display_name: 'China'},
-                        {key: 'US', display_name: 'USA'},
-                        {key: 'JP', display_name: 'Japan'},
-                        {key: 'EU', display_name: 'Eurozone'}
-                    ],
                     sortOptions: [{label: 'ID 升序', key: '+id'}, {label: 'ID 降序', key: '-id'}],
                 },
                 watch: {},
@@ -136,18 +134,9 @@
                     parseTime: function (time, format) {
                         return Ztbcms.formatTime(time, format)
                     },
-                    statusFilter: function (status) {
-                        var statusMap = {
-                            published: 'success',
-                            draft: 'info',
-                            deleted: 'danger'
-                        }
-                        return statusMap[status]
-                    },
                 },
                 methods: {
                     getList: function () {
-                        this.listLoading = true
                         var that = this;
                         $.ajax({
                             url: '{:U("Redirect/Index/getUrls")}',
@@ -160,7 +149,6 @@
                                     that.total = res.data.total - 1 + 1;
                                     that.listQuery.page = res.data.page - 1 + 1;
                                 }
-                                that.listLoading = false
                             }
                         });
                     },
@@ -197,7 +185,6 @@
                                 } else {
                                     that.$message.error('删除失败');
                                 }
-                                this.status = false;
                             }
                         });
                     },

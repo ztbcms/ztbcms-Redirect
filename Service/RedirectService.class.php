@@ -20,7 +20,7 @@ class RedirectService extends BaseService
     public static function getUrl($redirect)
     {
         if (empty($redirect)) {
-            return self::createReturn(false);
+            return self::createReturn(false, '参数异常: redirect');
         }
         $db = D('redirect_redirect');
         $where = array();
@@ -95,7 +95,8 @@ class RedirectService extends BaseService
         }
         $Urls = $db->where($where)->page($page)->limit($limit)->order($tmp)->select();
         for ($i = 0; $i < count($Urls); $i++) {
-            $Urls[$i]['short_id'] = urlDomain(get_url()) . "/Redirect/Redirect/link/redirect/" . $Urls[$i]['short_id'];
+            $Urls[$i]['short_url_v1'] = urlDomain(get_url()) . "/Redirect/Redirect/link/redirect/" . $Urls[$i]['short_id'];
+            $Urls[$i]['short_url_v2'] = urlDomain(get_url()) . "/redirect/" . $Urls[$i]['short_id'];
         }
         $data = [
             'items' => $Urls,
@@ -118,7 +119,7 @@ class RedirectService extends BaseService
         if ($result > 0) {
             return self::createReturn(false, '', '链接已存在');
         }
-        $short_id = md5($url);
+        $short_id = md5($url . C('AUTHCODE'));
         $time = time();
         $num = $db->add(['url' => $url, 'short_id' => $short_id, 'input_time' => $time]);
         if (!$num) {
@@ -141,7 +142,7 @@ class RedirectService extends BaseService
         if ($result != NULL) {
             return self::createReturn(false, $result, '链接已存在');
         }
-        $short_id = md5($url);
+        $short_id = md5($url . C('AUTHCODE'));
         $time = time();
         $num = $db->where(['id' => ['EQ', $id]])->save(['url' => $url, 'short_id' => $short_id, 'input_time' => $time, 'frequency' => 0]);
         if ($num) {
