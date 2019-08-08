@@ -3,7 +3,7 @@
 <block name="content">
     <div id="app" style="padding: 8px;" v-cloak>
         <el-card>
-            <h3>外部链接列表</h3>
+            <h3>跳转链接列表</h3>
             <el-alert
                     title="使用短链接时需要配置路由，详情请看模块的readme.md"
                     type="success">

@@ -3,12 +3,12 @@
 <block name="content">
     <div id="app" style="padding: 8px;" v-cloak>
         <el-card>
-            <h3>修改链接</h3>
+            <h3>跳转链接</h3>
             <el-row>
                 <el-col :span="20">
                     <div class="grid-content ">
                         <el-form ref="form" label-width="80px">
-                            <el-form-item label="外部链接">
+                            <el-form-item label="跳转链接">
                                 <el-input v-model="form.url"></el-input>
                             </el-form-item>
                             <el-form-item>
